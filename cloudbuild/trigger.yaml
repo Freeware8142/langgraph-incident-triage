@@ -1,0 +1,63 @@
+# Cloud Build Trigger Configuration
+# Creates triggers for CI/CD pipeline
+
+# Trigger 1: Main branch (production-ready builds)
+- name: 'incident-triage-main-trigger'
+  description: 'Build and deploy on main branch push'
+  serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/cloudbuild@$PROJECT.iam.gserviceaccount.com'
+  github:
+    owner: '${_GITHUB_OWNER}'
+    repo: '${_GITHUB_REPO}'
+    branch: '^main$'
+  filename: 'cloudbuild/cloudbuild.yaml'
+  includedFiles:
+    - '**/*.py'
+    - 'requirements.txt'
+    - 'Dockerfile'
+  excludedFiles:
+    - 'docs/**'
+    - '*.md'
+  substitutions:
+    _REGION: us-central1
+    _SERVICE_NAME: incident-triage
+    _GITHUB_OWNER: 'your-org'
+    _GITHUB_REPO: 'incident-triage'
+  tags:
+    - 'incident-triage'
+    - 'ci-cd'
+    - 'main'
+
+# Trigger 2: Pull request builds (quick validation)
+- name: 'incident-triage-pr-trigger'
+  description: 'Build on pull requests for validation'
+  serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/cloudbuild@$PROJECT.iam.gserviceaccount.com'
+  github:
+    owner: '${_GITHUB_OWNER}'
+    repo: '${_GITHUB_REPO}'
+    pullRequest:
+      branch: '^main$'
+  filename: 'cloudbuild/cloudbuild-pr.yaml'
+  includedFiles:
+    - '**/*.py'
+    - 'requirements.txt'
+  substitutions:
+    _REGION: us-central1
+    _SERVICE_NAME: incident-triage
+  tags:
+    - 'incident-triage'
+    - 'pull-request'
+
+# Trigger 3: Nightly build
+- name: 'incident-triage-nightly-trigger'
+  description: 'Nightly build with full test suite'
+  serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/cloudbuild@$PROJECT.iam.gserviceaccount.com'
+  github:
+    owner: '${_GITHUB_OWNER}'
+    repo: '${_GITHUB_REPO}'
+    branch: '^main$'
+  filename: 'cloudbuild/cloudbuild-nightly.yaml'
+  schedule:
+    cronSchedule: '0 2 * * *'
+  tags:
+    - 'incident-triage'
+    - 'nightly'

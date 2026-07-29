@@ -1,0 +1,65 @@
+# Skaffold Configuration for Cloud Deploy
+# Manages multi-environment deployments
+
+apiVersion: skaffold/v4beta1
+kind: Config
+
+metadata:
+  name: incident-triage
+
+build:
+  artifacts:
+    - image: gcr.io/PROJECT_ID/incident-triage
+      docker:
+        dockerfile: Dockerfile
+
+deploy:
+  cloudrun:
+    项目ID: PROJECT_ID
+    region: us-central1
+
+profiles:
+  # Development profile
+  - name: dev
+    deploy:
+      cloudrun:
+        项目ID: PROJECT_ID
+        serviceName: incident-triage-dev
+        port: 8080
+        concurrency: 80
+        maxScale: 2
+        minScale: 0
+        memory: 512Mi
+        cpu: 1
+        setEnvVars:
+          - ENVIRONMENT=development
+
+  # Staging profile
+  - name: staging
+    deploy:
+      cloudrun:
+        项目ID: PROJECT_ID
+        serviceName: incident-triage-staging
+        port: 8080
+        concurrency: 100
+        maxScale: 5
+        minScale: 0
+        memory: 1Gi
+        cpu: 2
+        setEnvVars:
+          - ENVIRONMENT=staging
+
+  # Production profile
+  - name: prod
+    deploy:
+      cloudrun:
+        项目ID: PROJECT_ID
+        serviceName: incident-triage
+        port: 8080
+        concurrency: 200
+        maxScale: 10
+        minScale: 1
+        memory: 2Gi
+        cpu: 2
+        setEnvVars:
+          - ENVIRONMENT=production

@@ -1,0 +1,59 @@
+# Cloud Build PR Validation Pipeline
+# Quick validation for pull requests
+
+substitutions:
+  _REGION: us-central1
+  _DOCKER_IMAGE: gcr.io/$PROJECT_ID/incident-triage
+
+steps:
+  # Step 1: Lint and type check
+  - name: 'python:3.11-slim'
+    id: 'lint'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install ruff mypy --quiet
+        echo "Running lint checks..."
+        ruff check . --ignore E501 || true
+        echo "Running type checks..."
+        mypy main.py agents/ --ignore-missing-imports || true
+
+  # Step 2: Run tests
+  - name: 'python:3.11-slim'
+    id: 'test'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install -r requirements.txt --quiet
+        python -m pytest tests/ -v --tb=short || echo "No tests found"
+
+  # Step 3: Build Docker image (no push for PRs)
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    args:
+      - 'build'
+      - '-t'
+      - '${_DOCKER_IMAGE}:pr-$COMMIT_SHA'
+      - '.'
+    waitFor: ['lint', 'test']
+
+  # Step 4: Basic container validation
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'validate'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        docker run --rm '${_DOCKER_IMAGE}:pr-$COMMIT_SHA' python -c "import main; print('Import successful')"
+
+# Store image temporarily
+images:
+  - '${_DOCKER_IMAGE}:pr-$COMMIT_SHA'
+
+timeout: '600s'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'

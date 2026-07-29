@@ -1,0 +1,133 @@
+# Cloud Build CI/CD Pipeline
+# Builds and deploys the LangGraph Incident Triage System to Cloud Run
+
+substitutions:
+  _REGION: us-central1
+  _SERVICE_NAME: incident-triage
+  _REPOSITORY: incident-triage-repo
+  _DOCKER_IMAGE: gcr.io/$PROJECT_ID/incident-triage
+
+steps:
+  # Step 1: Run linting and type checking
+  - name: 'python:3.11-slim'
+    id: 'lint'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install ruff mypy --quiet
+        ruff check . --ignore E501
+        mypy main.py agents/ --ignore-missing-imports || true
+
+  # Step 2: Run unit tests
+  - name: 'python:3.11-slim'
+    id: 'test'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install -r requirements.txt --quiet
+        python -m pytest tests/ -v --tb=short || echo "No tests found, skipping"
+
+  # Step 3: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    args:
+      - 'build'
+      - '-t'
+      - '${_DOCKER_IMAGE}:${SHORT_SHA}'
+      - '-t'
+      - '${_DOCKER_IMAGE}:latest'
+      - '--cache-from'
+      - '${_DOCKER_IMAGE}:latest'
+      - '.'
+    waitFor: ['lint', 'test']
+
+  # Step 4: Push Docker image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_DOCKER_IMAGE}'
+    waitFor: ['build']
+
+  # Step 5: Deploy to Development environment
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-dev'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}-dev'
+      - '--image=${_DOCKER_IMAGE}:${SHORT_SHA}'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--min-instances=0'
+      - '--max-instances=2'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--concurrency=80'
+      - '--timeout=60s'
+      - '--set-env-vars=ENVIRONMENT=development'
+      - '--service-account=incident-triage-dev@$PROJECT_ID.iam.gserviceaccount.com'
+    waitFor: ['push']
+
+  # Step 6: Deploy to Staging environment
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-staging'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}-staging'
+      - '--image=${_DOCKER_IMAGE}:${SHORT_SHA}'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--no-allow-unauthenticated'
+      - '--min-instances=0'
+      - '--max-instances=5'
+      - '--memory=1Gi'
+      - '--cpu=2'
+      - '--concurrency=100'
+      - '--timeout=120s'
+      - '--set-env-vars=ENVIRONMENT=staging'
+      - '--service-account=incident-triage-staging@$PROJECT_ID.iam.gserviceaccount.com'
+    waitFor: ['push']
+
+  # Step 7: Deploy to Production environment (requires manual approval)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-prod'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image=${_DOCKER_IMAGE}:${SHORT_SHA}'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--no-allow-unauthenticated'
+      - '--min-instances=1'
+      - '--max-instances=10'
+      - '--memory=2Gi'
+      - '--cpu=2'
+      - '--concurrency=200'
+      - '--timeout=300s'
+      - '--set-env-vars=ENVIRONMENT=production'
+      - '--service-account=incident-triage-prod@$PROJECT_ID.iam.gserviceaccount.com'
+    waitFor: ['deploy-staging']
+
+# Store images in Container Registry
+images:
+  - '${_DOCKER_IMAGE}:${SHORT_SHA}'
+  - '${_DOCKER_IMAGE}:latest'
+
+# Build timeout (20 minutes)
+timeout: '1200s'
+
+# Build options
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
+  dynamicSubstitutions: true

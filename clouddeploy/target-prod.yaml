@@ -1,0 +1,25 @@
+# Cloud Deploy Target: Production Environment
+
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: incident-triage
+  labels:
+    environment: production
+    app: incident-triage
+description: "Production deployment target for incident triage"
+
+run:
+  projectId: PROJECT_ID
+  location: us-central1
+  serviceAccount: incident-triage-prod@PROJECT_ID.iam.gserviceaccount.com
+
+# Require manual approval before production deployment
+requiresApproval: true
+
+executionConfigs:
+  - usages:
+      - RENDER
+      - DEPLOY
+    artifactStorage: "gs://PROJECT_ID-clouddeploy/incident-triage"
+    serviceAccount: cloudbuild@PROJECT_ID.iam.gserviceaccount.com

@@ -1,0 +1,22 @@
+# Cloud Deploy Target: Staging Environment
+
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: incident-triage-staging
+  labels:
+    environment: staging
+    app: incident-triage
+description: "Staging deployment target for incident triage"
+
+run:
+  projectId: PROJECT_ID
+  location: us-central1
+  serviceAccount: incident-triage-staging@PROJECT_ID.iam.gserviceaccount.com
+
+executionConfigs:
+  - usages:
+      - RENDER
+      - DEPLOY
+    artifactStorage: "gs://PROJECT_ID-clouddeploy/incident-triage"
+    serviceAccount: cloudbuild@PROJECT_ID.iam.gserviceaccount.com
