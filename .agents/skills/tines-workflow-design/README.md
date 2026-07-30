@@ -10,7 +10,8 @@ This skill provides enterprise-grade guidance for designing Tines workflows foll
 | [SKILL.md](SKILL.md) | The rulebook: seven principles, decision framework, library patterns, production checklist |
 | [TEMPLATE.md](TEMPLATE.md) | Workflow design template for new Tines Stories |
 | [INCIDENT_TRIAGE_STORY.md](INCIDENT_TRIAGE_STORY.md) | Incident triage story outline with patterns |
-| [M365_INCIDENT_TRIAGE_BLUEPRINT.md](M365_INCIDENT_TRIAGE_BLUEPRINT.md) | **Production-ready M365 incident triage blueprint** |
+| [M365_INCIDENT_TRIAGE_BLUEPRINT.md](M365_INCIDENT_TRIAGE_BLUEPRINT.md) | Strategic blueprint with rationale |
+| [TINES_STORY_SPEC.md](TINES_STORY_SPEC.md) | **Ready-to-build Tines story specification** |
 
 ## Quick Start
 
@@ -28,12 +29,15 @@ This skill provides enterprise-grade guidance for designing Tines workflows foll
 Use `TEMPLATE.md` as a fill-in-the-blanks starting point.
 
 ### For M365 Security Incidents
-Use `M365_INCIDENT_TRIAGE_BLUEPRINT.md` directly - it's production-ready with:
-- Complete step classification matrix (D/A/H)
-- 4-layer architecture with sub-stories
-- Approval gate configurations with timeouts
-- Exception handling matrix
-- Immutable audit record schema
+1. Start with `M365_INCIDENT_TRIAGE_BLUEPRINT.md` to understand the design rationale
+2. Use `TINES_STORY_SPEC.md` to implement directly in Tines
+
+## Key Documents
+
+| Document | When to Use |
+|----------|-------------|
+| `M365_INCIDENT_TRIAGE_BLUEPRINT.md` | Design phase, stakeholder review |
+| `TINES_STORY_SPEC.md` | Implementation phase, import into Tines |
 
 ## Sources
 
