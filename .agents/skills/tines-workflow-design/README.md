@@ -1,15 +1,16 @@
 # Tines Intelligent Workflow Design Skill
 
 ## Overview
-This skill provides enterprise-grade guidance for designing Tines workflows following the seven principles of intelligent workflow design.
+This skill provides enterprise-grade guidance for designing Tines workflows following the seven principles of intelligent workflow design, enhanced with patterns from the Tines Library.
 
 ## Files
 
 | File | Purpose |
 |-------|---------|
-| [SKILL.md](SKILL.md) | The rulebook: seven principles, decision framework, anti-patterns |
+| [SKILL.md](SKILL.md) | The rulebook: seven principles, decision framework, library patterns, production checklist |
 | [TEMPLATE.md](TEMPLATE.md) | Workflow design template for new Tines Stories |
-| [INCIDENT_TRIAGE_STORY.md](INCIDENT_TRIAGE_STORY.md) | Sample incident triage workflow for Microsoft Graph + Tines |
+| [INCIDENT_TRIAGE_STORY.md](INCIDENT_TRIAGE_STORY.md) | Incident triage story outline with patterns |
+| [M365_INCIDENT_TRIAGE_BLUEPRINT.md](M365_INCIDENT_TRIAGE_BLUEPRINT.md) | **Production-ready M365 incident triage blueprint** |
 
 ## Quick Start
 
@@ -23,25 +24,19 @@ This skill provides enterprise-grade guidance for designing Tines workflows foll
 
 ## Usage
 
-### Using the Skill
-Reference this skill when designing any Tines Story. Apply the decision framework to each step.
+### For New Workflows
+Use `TEMPLATE.md` as a fill-in-the-blanks starting point.
 
-### Using the Template
-1. Copy `TEMPLATE.md` for each new workflow
-2. Complete Section 1 (Business Outcome) before anything else
-3. Classify each step in Section 2
-4. Design layers in Section 3
-5. Add HITL checkpoints in Section 4
-6. Document exceptions in Section 5
-7. Verify with Section 8 checklist
+### For M365 Security Incidents
+Use `M365_INCIDENT_TRIAGE_BLUEPRINT.md` directly - it's production-ready with:
+- Complete step classification matrix (D/A/H)
+- 4-layer architecture with sub-stories
+- Approval gate configurations with timeouts
+- Exception handling matrix
+- Immutable audit record schema
 
-### Using the Sample Story
-The incident triage story demonstrates:
-- Microsoft Graph enrichment integration
-- Severity-based routing
-- Multi-tier approval gates
-- Exception handling
-- Audit logging
+## Sources
 
-## Principles Source
-Based on [Intelligent workflow design: seven principles for enterprise teams](https://www.tines.com/blog/intelligent-workflow-design-7-principles-for-enterprise-teams/)
+- [Seven principles of intelligent workflow design](https://www.tines.com/blog/intelligent-workflow-design-7-principles-for-enterprise-teams/)
+- [Tines Library - Incidents and Alerts](https://www.tines.com/library/use-cases/incidents-and-alerts/)
+- [Tines Library - Security](https://www.tines.com/library/teams/security/)
