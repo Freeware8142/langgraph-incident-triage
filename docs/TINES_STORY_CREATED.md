@@ -23,9 +23,20 @@ https://hidden-mountain-5366.tines.com/stories/m365_incident_triage
 
 Production incident triage workflow for Microsoft 365 security events. Receives alerts from Defender/Sentinel, enriches via Microsoft Graph API, classifies severity with AI, and routes to appropriate response path with human approval gates for high-risk actions. Business outcome: Reduce MTTR by 60%.
 
+## ⚠️ Important Note
+
+**The story was created successfully, but actions must be built through the Tines UI.**
+
+The Tines API in this tenant doesn't expose endpoints for programmatically creating actions. Use the specification file to build the workflow manually in the Tines Storyboard.
+
 ## Next Steps
 
-### 1. Add Credentials to the Story
+### 1. Build Actions in Tines UI
+
+Open the story and build actions using the specification:
+- **Specification:** `.agents/skills/tines-workflow-design/TINES_STORY_SPEC.md`
+
+### 2. Add Credentials to the Story
 
 The story requires the following credentials. Add them through the Tines UI:
 
