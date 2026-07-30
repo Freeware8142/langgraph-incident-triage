@@ -1,5 +1,5 @@
 #!/bin/bash
-# Deploy Incident Triage System to Cloud Run
+# Deploy Incident Triage System to Cloud Run using Cloud Build
 # Usage: ./deploy.sh [dev|staging|prod]
 
 set -e
@@ -7,7 +7,6 @@ set -e
 ENVIRONMENT="${1:-dev}"
 PROJECT_ID="${GOOGLE_CLOUD_PROJECT}"
 REGION="us-central1"
-IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/incident-triage-repo/incident-triage"
 SERVICE_NAME="incident-triage"
 
 # Set scaling based on environment
@@ -38,20 +37,16 @@ echo "=== Deploying to ${ENVIRONMENT} ==="
 echo "Project: ${PROJECT_ID}"
 echo "Region: ${REGION}"
 
-# Build and push Docker image
-echo "Building Docker image..."
-docker build -t "${IMAGE}:${ENVIRONMENT}" .
+# Run Cloud Build to build and deploy
+echo "Running Cloud Build..."
+gcloud builds submit \
+    --tag "${REGION}-docker.pkg.dev/${PROJECT_ID}/incident-triage-repo/${SERVICE_NAME}:${ENVIRONMENT}" \
+    --project="${PROJECT_ID}"
 
-echo "Pushing to Artifact Registry..."
-docker push "${IMAGE}:${ENVIRONMENT}"
-
-# Build secrets list for --set-secrets flag
-SECRETS="MS_GRAPH_CLIENT_ID:latest,MS_GRAPH_CLIENT_SECRET:latest,TINES_API_KEY:latest,LANGSMITH_API_KEY:latest"
-
-# Deploy to Cloud Run
+# Deploy to Cloud Run (without secrets for now - add via console if needed)
 echo "Deploying to Cloud Run..."
 gcloud run deploy "${SERVICE_NAME}" \
-    --image="${IMAGE}:${ENVIRONMENT}" \
+    --image="${REGION}-docker.pkg.dev/${PROJECT_ID}/incident-triage-repo/${SERVICE_NAME}:${ENVIRONMENT}" \
     --region="${REGION}" \
     --platform=managed \
     --allow-unauthenticated \
@@ -61,8 +56,7 @@ gcloud run deploy "${SERVICE_NAME}" \
     --cpu=1 \
     --concurrency=80 \
     --timeout=60s \
-    --set-env-vars="ENVIRONMENT=${ENVIRONMENT}" \
-    --set-secrets="${SECRETS}"
+    --set-env-vars="ENVIRONMENT=${ENVIRONMENT}"
 
 # Get the service URL
 SERVICE_URL=$(gcloud run services describe "${SERVICE_NAME}" \
